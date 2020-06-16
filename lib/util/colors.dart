@@ -4,6 +4,7 @@ class AppColors {
   static Color primaryWhite = Color(0xFFCADCED);
     // static Color primaryWhite = Colors.indigo[100];
   static Color moodyBlue = Color(0xff4F5D7B);
+  static Color lightGrey = Color(0xffDEE7E9);
   static Color lightGreen = Color(0xff7BC774);
   static Color red = Color(0xffD02431);
   static Color green = Color(0xff1BAC74);

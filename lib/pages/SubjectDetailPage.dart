@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:studyapp/pages/audioplayer.dart';
 import 'package:studyapp/pages/home.dart';
 import 'package:studyapp/redux/actions.dart';
 import 'package:studyapp/model/app_state.dart';
@@ -15,9 +16,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 class SubjectDetailPage extends StatelessWidget{
   final String user = 'Bukola Damola';
   final List<Map<String, dynamic>> courseMaterial = [
-    {'id': 1, 'name': 'Trignometry', 'type':'pdf', 'url': 'https://pdfkit.org/docs/guide.pdf'},
+    {'id': 1, 'name': 'Trignometry', 'type':'audio', 'url': 'https://www.mediacollege.com/downloads/sound-effects/nature/forest/rainforest-ambient.mp3'},
     {'id': 2, 'name': 'Comprehension', 'type':'video', 'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'},
-    {'id': 3, 'name': 'Equations', 'type':'audio', 'url': 'https://pdfkit.org/docs/guide.pdf'},
+    
     {'id': 4, 'name': 'Algebraic Expressions', 'type':'video', 'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'},
     {'id': 5, 'name': 'Common Factors', 'type':'pdf', 'url': 'https://pdfkit.org/docs/guide.pdf'}
   ];
@@ -449,6 +450,9 @@ class SubjectDetailPage extends StatelessWidget{
                                                         }
                                                         if(material['file_type'].trim().toLowerCase() == 'video'){
                                                           return Navigator.of(context).pushNamed('/videoView');
+                                                        }
+                                                        if(material['file_type'].trim().toLowerCase() == 'audio'){
+                                                          return Navigator.push(context, MaterialPageRoute(builder: (context) => AudioPlayerApp.fromApp(material)));
                                                         }
                                                         print('her insider o');
                                                         return null;
