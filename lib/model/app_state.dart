@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:studyapp/model/app_practiceQuestion.dart';
+import 'package:studyapp/model/app_resource.dart';
+import 'package:studyapp/model/app_resource_material.dart';
 import 'package:studyapp/model/app_testparams.dart';
 import 'package:studyapp/model/app_userreport.dart';
 import 'package:studyapp/model/test.dart';
@@ -21,6 +23,9 @@ class AppState{
   TestParams testParams;
   TestReport report;
   String testMode = "new";
+  String selectedResource = '';
+  ResourceContent content;
+  ResourceMaterial resource;
   AppState({this.selectedTabIndex});
   
   AppState.fromAppState(AppState anotherState){
@@ -39,5 +44,8 @@ class AppState{
     testParams = anotherState.testParams;
     report = anotherState.report;
     testMode = anotherState.testMode;
+    selectedResource = anotherState.selectedResource;
+    content = anotherState.content;
+    resource = anotherState.resource;
   }
 }

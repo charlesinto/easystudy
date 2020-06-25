@@ -47,5 +47,14 @@ AppState reducer(AppState prevState, dynamic action){
   if(action is SetTestMode){
     newState.testMode = action.payload;
   }
+  if(action is SelectedResource){
+    newState.selectedResource = action.payload;
+  }
+  if(action is SelectedContent){
+    newState.content = action.payload;
+  }
+  if(action is ResourceToView){
+    newState.resource = action.payload;
+  }
   return newState;
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:studyapp/model/app_practiceQuestion.dart';
+import 'package:studyapp/model/app_resource.dart';
+import 'package:studyapp/model/app_resource_material.dart';
 import 'package:studyapp/model/app_testparams.dart';
 import 'package:studyapp/model/app_userreport.dart';
 import 'package:studyapp/model/test.dart';
@@ -78,4 +80,19 @@ class ReportGenerated{
 class SetTestMode{
   final String payload;
   SetTestMode(this.payload);
+}
+
+class SelectedResource{
+  final String payload;
+  SelectedResource(this.payload);
+}
+
+class SelectedContent{
+  final ResourceContent payload;
+  SelectedContent(this.payload);
+}
+
+class ResourceToView{
+  final ResourceMaterial payload;
+  ResourceToView(this.payload);
 }

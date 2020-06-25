@@ -15,6 +15,8 @@ import 'package:studyapp/pages/home.dart';
 import 'package:studyapp/pages/learning.dart';
 import 'package:studyapp/pages/login.dart';
 import 'package:studyapp/pages/notifications.dart';
+import 'package:studyapp/pages/otherResources.dart';
+import 'package:studyapp/pages/pdfSecond.dart';
 import 'package:studyapp/pages/pdfViewer.dart';
 import 'package:studyapp/pages/practiceSubjects.dart';
 import 'package:studyapp/pages/practice_page.dart';
@@ -27,10 +29,13 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:studyapp/model/app_state.dart';
 import 'package:studyapp/pages/quiz.dart';
 import 'package:studyapp/pages/quizResponse.dart';
+import 'package:studyapp/pages/resoucesDetailPage.dart';
+import 'package:studyapp/pages/resources.dart';
 import 'package:studyapp/pages/subjectPages.dart';
 import 'package:studyapp/pages/teacher_login.dart';
 import 'package:studyapp/pages/userLogin.dart';
 import 'package:studyapp/pages/videoPlayer.dart';
+import 'package:studyapp/pages/videoSecond.dart';
 import 'package:studyapp/redux/reducers.dart';
 import 'package:studyapp/redux/actions.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -161,7 +166,12 @@ class _MyAppState extends State<MyApp>{
                            '/practicesubjects': (_) => PracticeSubjects(),
                            '/preparePracticeTest': (_) => PrepareTest(),
                            '/practiceTest': (_) => PracticeTest(),
-                           '/report': (_) => PracticeReport()
+                           '/report': (_) => PracticeReport(),
+                           '/otherResources': (_) => OtherResources(),
+                           '/resourcecatgories': (_) => ResourceDetail(),
+                           '/resourcesView': (_) => ResourcesContentPage(),
+                           '/pdf2': (_) => PdfSecond(),
+                           '/video2': (_) => VideoSecond()
                           },
                           onGenerateRoute: (RouteSettings setting){
                             List<String> pathElements = setting.name.split('/');

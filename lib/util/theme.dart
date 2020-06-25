@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppTheme{
+  
    static List<BoxShadow> shadow = <BoxShadow>[
                 BoxShadow(
                   color: Colors.grey.withOpacity(0.5),
@@ -26,4 +27,11 @@ class AppTheme{
                   offset: Offset(0, 10), // changes position of shadow
                 ),
               ];
+
+  static double fullHeight(BuildContext context){
+    return MediaQuery.of(context).size.height;
+  }
+  static double fullWidth(BuildContext context){
+    return MediaQuery.of(context).size.width;
+  }
 }

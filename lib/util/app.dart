@@ -8,9 +8,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:studyapp/model/app_practiceQuestion.dart';
+import 'package:studyapp/model/app_resource_category.dart';
+import 'package:studyapp/model/app_resource_material.dart';
+import 'package:studyapp/model/app_state.dart';
 import 'package:studyapp/model/app_testQuestion.dart';
 import 'package:studyapp/model/user.dart';
 import 'package:studyapp/util/colors.dart';
+import 'package:http/http.dart' as http;
 
 class App{
   
@@ -152,5 +156,59 @@ class App{
             ),
           ],
         ).show();
+  }
+
+  static Future<List<ResourceCategory>> getResourceCatgeories(BuildContext context) async{
+    try{
+        List<ResourceCategory> catgories = [];
+          var response = await http.get('http://cbccollege.easystudy.com.ng/resource_cat.php');
+          var resoureCategories = json.decode(response.body)['resource_cat'];
+          resoureCategories.forEach((cat) {
+            catgories.add(ResourceCategory(description: cat['description'] , id: cat['id'], title:cat['title'] ));
+          });
+          return catgories;
+    }catch(error){
+      throw error;
+    }
+  }
+   static isLoading(BuildContext context){
+    return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return Dialog(
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical:16.0, horizontal: 16.0),
+          child: new Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            new CircularProgressIndicator(),
+            Container(padding: EdgeInsets.symmetric(horizontal:16.0),
+              child: new Text("Loading"),
+            )
+          ],
+        ),),
+      );
+      });
+  }
+  static stopLoading(BuildContext context){
+    return Navigator.pop(context);
+  }
+  static Future<List<ResourceMaterial>> getMaterialResourceById(String id) async{
+    try{
+      List<ResourceMaterial> resource = [];
+      
+      var response = await http.get('http://cbccollege.easystudy.com.ng/resource_materials.php?id=$id');
+      if(response.statusCode == 200 && response.body != ''){
+        var materials = json.decode(response.body)['material'];
+        materials.forEach((item){
+          resource.add(ResourceMaterial(id: item['id'], category: item['category'], categoryId: item['cat_id'], fileName: item['file_name'], fileType: item['file_type'], fileUrl: item['file_url']));
+        });
+        return resource;
+      }
+      return resource;
+    }catch(error){
+      throw error;
+    }
   }
 }

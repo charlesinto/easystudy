@@ -85,7 +85,8 @@ class _LandingPage extends State<LandingPage>{
                                 ),
                             ) ,)
                         ,),
-                        SingleChildScrollView(
+                        Expanded(
+                          child: SingleChildScrollView(
                           child: Column(children: <Widget>[
                             SizedBox(height: 20,),
                         FlatButton(child: Card(
@@ -141,6 +142,19 @@ class _LandingPage extends State<LandingPage>{
                         ),
                         FlatButton(child: Card(
                                     child: ListTile(
+                                      title: Text('Other Resources'),
+                                      leading: Icon(Icons.school),
+                                    ),
+                                  ),
+                        onPressed: (){
+                          Navigator.pop(context);
+                          // StoreProvider.of<AppState>(context).dispatch(TabIndex(3));
+                          Navigator.of(context).pushNamed('/otherResources');
+                          // Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
+                        }
+                        ),
+                        FlatButton(child: Card(
+                                    child: ListTile(
                                       title: Text('My Profile'),
                                       leading: Icon(Icons.account_circle),
                                     ),
@@ -164,8 +178,11 @@ class _LandingPage extends State<LandingPage>{
                           Navigator.of(context).pushReplacementNamed('/selectapp');
                           print('done');
                         }
-                        )
+                        ),
+                        SizedBox(height: 20,),
                           ],)
+                        )
+                          
                         )
                     ],)
                     ,)
