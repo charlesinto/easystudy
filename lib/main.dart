@@ -8,6 +8,7 @@ import 'package:studyapp/pages/LandingPage.dart';
 import 'package:studyapp/pages/SubjectDetailPage.dart';
 import 'package:studyapp/pages/assesmentDetail.dart';
 import 'package:studyapp/pages/assessment.dart';
+import 'package:studyapp/pages/audioplayer.dart';
 import 'package:studyapp/pages/chatroom.dart';
 import 'package:studyapp/pages/classroom.dart';
 import 'package:studyapp/pages/home.dart';
@@ -135,7 +136,7 @@ class _MyAppState extends State<MyApp>{
                         theme: ThemeData(
                             primaryColor: Colors.grey[800],
                           ),
-                          home: snapshot.data['user'] != null ? Home() :  AppPage(),
+                          home: snapshot.data['user'] != null ? Home():  AppPage(),
                           // initialRoute: '/',
                           routes: {
                             '/app': (context) => Home(),

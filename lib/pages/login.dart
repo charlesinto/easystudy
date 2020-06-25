@@ -148,8 +148,11 @@ class _LoginState extends State<Login>{
            
         })
         .catchError((onError){
-
+          
           Navigator.of(context).pop();
+          setState((){
+                      errorMessage = "Some errors were encountered, please try again";
+            });
           print('error: '+ onError.toString());
         });
       
@@ -249,7 +252,7 @@ class _LoginState extends State<Login>{
     } else {
       // If the server did not return a 200 OK response,
       // then throw an exception.
-      Navigator.of(context).pop();
+      // Navigator.of(context).pop();
       setState(() {
         errorMessage = "failed to load primary school data";
       });
@@ -271,11 +274,11 @@ class _LoginState extends State<Login>{
       }else {
       // If the server did not return a 200 OK response,
       // then throw an exception.
-      Navigator.of(context).pop();
+      // Navigator.of(context).pop();
       setState(() {
         errorMessage = "failed to load junior secondary school data";
       });
-      throw Exception('Failed to load album');
+      // throw Exception('Failed to load album');
     }
   }
 
@@ -292,11 +295,11 @@ class _LoginState extends State<Login>{
       }else {
       // If the server did not return a 200 OK response,
       // then throw an exception.
-      Navigator.of(context).pop();
+      // Navigator.of(context).pop();
       setState(() {
         errorMessage = "failed to load senior secondary school data";
       });
-      throw Exception('Failed to load album');
+      // throw Exception('Failed to load album');
     }
   }
   

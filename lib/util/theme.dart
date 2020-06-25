@@ -17,4 +17,13 @@ class AppTheme{
                   offset: Offset(0, 3), // changes position of shadow
                 ),
               ];
+
+  static List<BoxShadow> light = <BoxShadow>[
+                BoxShadow(
+                  color: Color(0xFF2B2121),
+                  spreadRadius: 8,
+                  blurRadius: 7,
+                  offset: Offset(0, 10), // changes position of shadow
+                ),
+              ];
 }
