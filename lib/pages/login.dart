@@ -109,6 +109,7 @@ class _LoginState extends State<Login>{
            if(doc.exists){
             
              final SharedPreferences prefs = await SharedPreferences.getInstance();
+             
              prefs.setString('appDomain', doc.data['appDomain']);
               appDomain = doc.data['appDomain'];
               DateTime licenseEndDate = doc.data['licenseEndDate'].toDate();
@@ -202,6 +203,19 @@ class _LoginState extends State<Login>{
         print(password);
         print('signing up user');
         final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+        List<User> studentClass = await App.getUserClass( schoolActivationPin, _admissionNumber.trim());
+          
+          if(studentClass.length <= 0){
+            Navigator.of(context).pop();
+            return  setState((){
+                errorMessage = "No student account found with the admission number, please contact admin";
+            });
+          }
+
+          App.subscribeToNotiifcation(studentClass[0].schoolCode, studentClass[0].userClass);
+            prefs.setString('student', json.encode(studentClass[0]));
+        
         var phoneNumber = _phoneNumber.trim(); 
         AuthResult result = await _firebaseAuth
                                 .createUserWithEmailAndPassword(email: email, password: phoneNumber);
@@ -209,14 +223,10 @@ class _LoginState extends State<Login>{
           // await Firestore.instance.document('/users/'+email).setData(userData);
           var uid =  ( await _firebaseAuth.currentUser()).uid;
           userData['uid'] = uid;
-          await Firestore.instance.collection('users').document(schoolActivationPin).collection('activated users')
-                .add(userData);
-          List<User> student = await App.getUserClass( schoolActivationPin, _admissionNumber.trim());
+          userData['class'] = studentClass[0].userClass;
+          await Firestore.instance.collection('users')
+                  .add(userData);
           
-          if(student.length > 0){
-            App.subscribeToNotiifcation(student[0].schoolCode, student[0].userClass);
-            prefs.setString('student', json.encode(student[0]));
-          }
           prefs.setString('user', json.encode(userData));
           
           print('user fond: '+ prefs.getString('user'));
@@ -225,13 +235,23 @@ class _LoginState extends State<Login>{
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed('/app');
       }catch(error){
+        Navigator.of(context).pop();
+        print(error);
         // print('error message: '+ error.message);
         if(error.code == 'auth/email-already-exists'){
-          setState(() {
+          return setState(() {
             errorMessage = "Email Already exists";
           });
         }
-        return Navigator.of(context).pop();
+        if(error.code == 'auth/weak-password'){
+          return setState(() {
+            errorMessage = "Phone Number format is invalid, phone number should have 11 digits";
+          });
+        }
+         
+         return setState((){
+                errorMessage = "Sorry, could not perform registration";
+            });
       }
       
   }

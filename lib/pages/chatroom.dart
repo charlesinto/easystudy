@@ -55,6 +55,7 @@ class _ChatRoomState extends State<ChatRoom>{
   _sendMessage(String roomname,BuildContext context) async{
       if(_message.isNotEmpty){
         _controller.clear();
+        var user = await getUserProfile();
         await Firestore.instance.collection('chats').document(widget.schoolCode)
             .collection(roomname).add({
               'senderId': (await FirebaseAuth.instance.currentUser()).uid,
@@ -295,6 +296,18 @@ class _ChatRoomState extends State<ChatRoom>{
       }
     }
   }
+  Future<Map<String, dynamic>> getUserProfile() async{
+      try{
+        SharedPreferences _prefs = await SharedPreferences.getInstance();
+        final Map<String, dynamic> userInfo = json.decode(_prefs.getString('user'));
+        
+        print(userInfo);
+        return userInfo;
+      }catch(error){
+        print(error);
+        return null;
+      }
+  }
   @override
   Widget build(BuildContext context) {
     final double deviceHeight = MediaQuery.of(context).size.height;
@@ -317,7 +330,11 @@ class _ChatRoomState extends State<ChatRoom>{
     // TODO: implement build
     return GestureDetector(
       onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
-      child: StreamBuilder(
+      child: FutureBuilder(
+        future: getUserProfile(),
+        builder: (BuildContext context,AsyncSnapshot snapshot){
+          if(snapshot.connectionState == ConnectionState.done){
+            return StreamBuilder(
       stream: Firestore.instance.collection('chats').document('${widget.schoolCode}').collection(widget.selectedRoom)
                 .orderBy('createdAt').snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
@@ -959,7 +976,10 @@ class _ChatRoomState extends State<ChatRoom>{
                         );
                       },
                     );
-      } ,)
+      } ,);
+          } 
+          return Container();
+        })
    ,
     );
     

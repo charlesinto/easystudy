@@ -4,17 +4,26 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:studyapp/pages/audioplayer.dart';
+import 'package:studyapp/pages/conversation.dart';
 import 'package:studyapp/pages/home.dart';
+import 'package:studyapp/pages/pdfviewerv.dart';
 import 'package:studyapp/redux/actions.dart';
 import 'package:studyapp/model/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 // import 'package:badges/badges.dart';
 
-class SubjectDetailPage extends StatelessWidget{
+class SubjectDetailPage extends StatefulWidget{
+  @override
+  State<StatefulWidget> createState() => _SubjectDetailPage();
+}
+
+class _SubjectDetailPage extends State<SubjectDetailPage>{
   final String user = 'Bukola Damola';
+  String errorMessage = "";
   final List<Map<String, dynamic>> courseMaterial = [
     {'id': 1, 'name': 'Trignometry', 'type':'audio', 'url': 'https://www.mediacollege.com/downloads/sound-effects/nature/forest/rainforest-ambient.mp3'},
     {'id': 2, 'name': 'Comprehension', 'type':'video', 'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'},
@@ -24,6 +33,8 @@ class SubjectDetailPage extends StatelessWidget{
   ];
   renderIcon(var material){
     switch(material['file_type']){
+      case 'ppt':
+      case 'doc':
       case 'pdf':
         return LineIcons.file_pdf_o;
       case 'video':
@@ -50,253 +61,127 @@ class SubjectDetailPage extends StatelessWidget{
     
     return  fileredMaterials;
   }
+  refreshMaterials(BuildContext context) async{
+    showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return Dialog(
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical:16.0, horizontal: 16.0),
+          child: new Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            new CircularProgressIndicator(),
+            Container(padding: EdgeInsets.symmetric(horizontal:16.0),
+              child: new Text("Loading"),
+            )
+          ],
+        ),),
+      );
+      });
+      await _fetchPrimarySchoolSubject(context);
+      await _getJuniorSchoolData(context);
+      await _getSeniorSchoolSubject(context);
+      Navigator.pop(context);
+      setState(() {
+        errorMessage = "";
+      });
+  }
+     _fetchPrimarySchoolSubject(BuildContext context) async {
+      // print('here 1');
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      var appDomain = prefs.getString('appDomain');
+      final response = await http.get(appDomain+'read.php?id=2');
+      if (response.statusCode == 200) {
+      // If the server did return a 200 OK response,
+      // then parse the JSON.
+      // print('here 2');
+      // print(json.decode(response.body).toString());
+      // SharedPreferences
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final responseSubjects = json.decode(response.body);
+
+      prefs.setString('primary_subjects', json.encode(responseSubjects['subjects']));
+    } else {
+      // If the server did not return a 200 OK response,
+      // then throw an exception.
+      // Navigator.of(context).pop();
+      setState(() {
+        errorMessage = "failed to load primary school data";
+      });
+      throw Exception('Failed to load album');
+    }
+  }
+
+  _getJuniorSchoolData(BuildContext context) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+      var appDomain = prefs.getString('appDomain');
+    final response = await http.get(appDomain+'read.php?id=3');
+      if (response.statusCode == 200) {
+         final SharedPreferences prefs = await SharedPreferences.getInstance();
+      // final SharedPreferences prefs = await _prefs;
+      // print('here o'+ json.decode(response.body).toString());
+      final responseSubjects = json.decode(response.body);
+      prefs.setString('junior_subjects', json.encode(responseSubjects['subjects']));
+
+      // print('hello '+ json.decode(prefs.getString('primary_subjects')).toString());
+      // Navigator.of(context).pop();
+      }else {
+      // If the server did not return a 200 OK response,
+      // then throw an exception.
+      // Navigator.of(context).pop();
+      setState(() {
+        errorMessage = "failed to load junior secondary school data";
+      });
+      // throw Exception('Failed to load album');
+    }
+  }
+
+  _getSeniorSchoolSubject(BuildContext context) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+      var appDomain = prefs.getString('appDomain');
+      final response = await http.get(appDomain+'read.php?id=4');
+      if (response.statusCode == 200) {
+         final SharedPreferences prefs = await SharedPreferences.getInstance();
+      // final SharedPreferences prefs = await _prefs;
+      // print('here o'+ json.decode(response.body).toString());
+      final responseSubjects = json.decode(response.body);
+      prefs.setString('senior_subjects', json.encode(responseSubjects['subjects']));
+      // print('hello '+ json.decode(prefs.getString('primary_subjects')).toString());
+      // Navigator.of(context).pop();
+      }else {
+      // If the server did not return a 200 OK response,
+      // then throw an exception.
+      // Navigator.of(context).pop();
+      setState(() {
+        errorMessage = "failed to load senior secondary school data";
+      });
+      // throw Exception('Failed to load album');
+    }
+  }
   @override
   Widget build(BuildContext context) {
+    print('reloaded');
     double deviceHeight = MediaQuery.of(context).size.height;
-    // TODO: implement build   
     return StoreConnector<AppState, AppState>( 
       converter: (store) => store.state, 
       builder: (context, state){
-        print(state.selectedSubject.toString());
         return Scaffold(
           appBar: AppBar(
          title: Text(state.selectedSubject['subject']),
          backgroundColor: Colors.blueAccent,
-        ),
-          endDrawer:  FutureBuilder(
-        future: getLoggedInUser() ,
-        builder: (context, AsyncSnapshot snapshot){
-              if(snapshot.connectionState == ConnectionState.done){
-                 if(snapshot.hasData){
-                      return  Drawer(
-                            child: SafeArea(
-                              child: Column(
-                                crossAxisAlignment:  CrossAxisAlignment.start,
-                                children: <Widget>[
-                                Container(
-
-                                  height: 200,
-                                  decoration: BoxDecoration(
-                                    color: Colors.greenAccent,
-                                  ),
-                                  child: Center(
-                                    child: Text(snapshot.data,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-
-                                        color: Colors.white, fontFamily: 'Gilroy',
-                                          fontSize: 26,
-                                          fontWeight: FontWeight.w800
-                                        ),
-                                    ) ,)
-                                ,),
-                                SizedBox(height: 20,),
-                                FlatButton(child: Card(
-                                            child: ListTile(
-                                              title: Text('Home'),
-                                              leading: Icon(Icons.home),
-                                            ),
-                                          ),
-                                onPressed: (){
-                                  Navigator.pop(context);
-                                  StoreProvider.of<AppState>(context).dispatch(TabIndex(0));
-                                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                                }
-                                ),
-                                FlatButton(child: Card(
-                                            child: ListTile(
-                                              title: Text('Learning'),
-                                              leading: Icon(LineIcons.book),
-                                            ),
-                                          ),
-                                onPressed: (){
-                                  Navigator.pop(context);
-                                  StoreProvider.of<AppState>(context).dispatch(TabIndex(1));
-                                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                                }
-                                ),
-                                FlatButton(child: Card(
-                                            child: ListTile(
-                                              title: Text('Classroom'),
-                                              leading: Icon(LineIcons.users),
-                                            ),
-                                          ),
-                                onPressed: (){
-                                  Navigator.pop(context);
-                                  StoreProvider.of<AppState>(context).dispatch(TabIndex(2));
-                                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                                }
-                                ),
-                                FlatButton(child: Card(
-                                            child: ListTile(
-                                              title: Text('Profile'),
-                                              leading: Icon(LineIcons.user),
-                                            ),
-                                          ),
-                                onPressed: (){
-                                  Navigator.pop(context);
-                                  StoreProvider.of<AppState>(context).dispatch(TabIndex(3));
-                                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                                }
-                                )
-                            ],)
-                            ,) 
-                            
-                          );
-                 }
-                 return  Drawer(
-            child: SafeArea(
-              child: Column(
-                crossAxisAlignment:  CrossAxisAlignment.start,
-                children: <Widget>[
-                Container(
-
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.greenAccent,
-                  ),
-                  child: Center(
-                    child: Text('',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-
-                        color: Colors.white, fontFamily: 'Gilroy',
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800
-                        ),
-                    ) ,)
-                ,),
-                SizedBox(height: 20,),
-                FlatButton(child: Card(
-                            child: ListTile(
-                              title: Text('Home'),
-                              leading: Icon(Icons.home),
-                            ),
-                          ),
-                onPressed: (){
-                  Navigator.pop(context);
-                  StoreProvider.of<AppState>(context).dispatch(TabIndex(0));
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                }
-                ),
-                FlatButton(child: Card(
-                            child: ListTile(
-                              title: Text('Learning'),
-                              leading: Icon(LineIcons.book),
-                            ),
-                          ),
-                onPressed: (){
-                  Navigator.pop(context);
-                  StoreProvider.of<AppState>(context).dispatch(TabIndex(1));
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                }
-                ),
-                FlatButton(child: Card(
-                            child: ListTile(
-                              title: Text('Classroom'),
-                              leading: Icon(LineIcons.users),
-                            ),
-                          ),
-                onPressed: (){
-                  Navigator.pop(context);
-                  StoreProvider.of<AppState>(context).dispatch(TabIndex(2));
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                }
-                ),
-                FlatButton(child: Card(
-                            child: ListTile(
-                              title: Text('Profile'),
-                              leading: Icon(LineIcons.user),
-                            ),
-                          ),
-                onPressed: (){
-                  Navigator.pop(context);
-                  StoreProvider.of<AppState>(context).dispatch(TabIndex(3));
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                }
-                )
-            ],)
-            ,) 
-            
-          );
-              }
-              return  Drawer(
-            child: SafeArea(
-              child: Column(
-                crossAxisAlignment:  CrossAxisAlignment.start,
-                children: <Widget>[
-                Container(
-
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.greenAccent,
-                  ),
-                  child: Center(
-                    child: Text('',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-
-                        color: Colors.white, fontFamily: 'Gilroy',
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800
-                        ),
-                    ) ,)
-                ,),
-                SizedBox(height: 20,),
-                FlatButton(child: Card(
-                            child: ListTile(
-                              title: Text('Home'),
-                              leading: Icon(Icons.home),
-                            ),
-                          ),
-                onPressed: (){
-                  Navigator.pop(context);
-                  StoreProvider.of<AppState>(context).dispatch(TabIndex(0));
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                }
-                ),
-                FlatButton(child: Card(
-                            child: ListTile(
-                              title: Text('Learning'),
-                              leading: Icon(LineIcons.book),
-                            ),
-                          ),
-                onPressed: (){
-                  Navigator.pop(context);
-                  StoreProvider.of<AppState>(context).dispatch(TabIndex(1));
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                }
-                ),
-                FlatButton(child: Card(
-                            child: ListTile(
-                              title: Text('Classroom'),
-                              leading: Icon(LineIcons.users),
-                            ),
-                          ),
-                onPressed: (){
-                  Navigator.pop(context);
-                  StoreProvider.of<AppState>(context).dispatch(TabIndex(2));
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                }
-                ),
-                FlatButton(child: Card(
-                            child: ListTile(
-                              title: Text('Profile'),
-                              leading: Icon(LineIcons.user),
-                            ),
-                          ),
-                onPressed: (){
-                  Navigator.pop(context);
-                  StoreProvider.of<AppState>(context).dispatch(TabIndex(3));
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                }
-                )
-            ],)
-            ,) 
-            
-          );
-          } 
-        ,) ,
+         actions: <Widget>[
+            FlatButton(
+              textColor: Colors.white,
+              onPressed: () {
+                refreshMaterials(context);
+              },
+              child: Text("Refresh"),
+              shape: CircleBorder(side: BorderSide(color: Colors.transparent)),
+            ),
+          ],
+        ) ,
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -403,8 +288,8 @@ class SubjectDetailPage extends StatelessWidget{
                                                               });
                                                         print('done pushing');
                                                         Navigator.of(context).pop();
-                                                        StoreProvider.of<AppState>(context).dispatch(TabIndex(2));
-                                                        Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
+                                                        // StoreProvider.of<AppState>(context).dispatch(TabIndex(2));
+                                                        Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => ConversationPage(roomname)) );
                                                       }catch(error){
                                                         print('some errors were encountered: '+ error.toString());
                                                       }
@@ -419,7 +304,7 @@ class SubjectDetailPage extends StatelessWidget{
                                                       }
                                                     },
                                                     color: Colors.white,
-                                                    child: Text('Join Classroom'),
+                                                    child: Text('Join Conversation'),
                                                   ) ,)
                                               ]
                                             )
@@ -444,8 +329,10 @@ class SubjectDetailPage extends StatelessWidget{
                                                       ),
                                                       onPressed: (){
                                                         StoreProvider.of<AppState>(context).dispatch(SelectedMaterial(material));
-                                                        if(material['file_type'].trim().toLowerCase() == 'pdf'){
+                                                        if(material['file_type'].trim().toLowerCase() == 'pdf' || material['file_type'].trim().toLowerCase() == 'ppt' || material['file_type'].trim().toLowerCase() == 'doc'){
+                                                          // print(material);
                                                           
+                                                          // return Navigator.push(context, MaterialPageRoute(builder: (context) => Pdf(materialName: material['file_name'], url: material['file_url'])));
                                                           return Navigator.of(context).pushNamed('/pdfview');
                                                         }
                                                         if(material['file_type'].trim().toLowerCase() == 'video'){
@@ -519,5 +406,4 @@ class CircleButton extends StatelessWidget {
       ),
     );
   }
-
 }

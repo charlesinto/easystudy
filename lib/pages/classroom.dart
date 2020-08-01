@@ -7,6 +7,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:studyapp/model/app_state.dart';
 import 'package:studyapp/pages/chatroom.dart';
+import 'package:studyapp/pages/classConversation.dart';
 import 'package:studyapp/pages/home.dart';
 import 'package:studyapp/redux/actions.dart';
 
@@ -52,6 +53,19 @@ class ClassRoom extends StatelessWidget{
     }catch(error){
       print('some errors were encountered: '+ error.toString());
     }
+  }
+  
+  Future<Map<String, dynamic>> getUserProfile() async{
+      try{
+        SharedPreferences _prefs = await SharedPreferences.getInstance();
+        final Map<String, dynamic> userInfo = json.decode(_prefs.getString('user'));
+        
+        print(userInfo);
+        return userInfo;
+      }catch(error){
+        print(error);
+        return null;
+      }
   }
   signTeacherToClass(var teacherClasses) async{
      await teacherClasses.forEach((subject) async{
@@ -110,17 +124,21 @@ class ClassRoom extends StatelessWidget{
                     );
               }
               // signTeacherToClass(snapshot.data.documents.first['subjects']);
-              return FutureBuilder(
-                future: signTeacherToClass(snapshot.data.documents.first['subjects']),
-                builder: (BuildContext context,AsyncSnapshot snapshot){
-                  if(snapshot.connectionState == ConnectionState.done){
-                     if(snapshot.hasError){
-                       return Container();
-                     }
-                     return renderStudentChatRooms();
-                  }
-                  return Container();
-                },
+              return Column(
+                children: snapshot.data.documents.first['classes'].map((doc) {
+                  return Card(child: ListTile(
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => ClassConversation(schoolCode: schoolCode, userClass: doc['class'])) );
+                          },
+                          title: Text(doc['class']),
+                          trailing: CircleButton(
+                                  onTap: (){
+                                    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => ClassConversation(schoolCode: schoolCode, userClass: doc['class'])) );
+                                  },
+                                  iconData: Icons.arrow_forward_ios
+                                ),
+                        ),);
+                }) ,
               );
               // return renderStudentChatRooms();
                
@@ -133,7 +151,7 @@ class ClassRoom extends StatelessWidget{
         } ,
       );
   }
-  renderStudentChatRooms(){
+  renderStudentChatRooms(BuildContext context){
       return Container(
         child: FutureBuilder(
                   future: getUserChatRooms(),
@@ -145,14 +163,62 @@ class ClassRoom extends StatelessWidget{
                               children: <Widget>[
                                 Container(
                                   padding: EdgeInsets.symmetric(horizontal: 16.0),
-                                  child: Text('Your Classrooms',
+                                  child: Text('Your Classroom',
                                     style: TextStyle(fontFamily: 'Gilroy', fontSize: 26.0, 
                                     fontWeight: FontWeight.bold),
                                   ),
                                 ),
                                 SizedBox(height: 16.0,),
                                 Container(
-                                  child: ListView(
+                                  child: FutureBuilder(
+                                    builder: (BuildContext context, snapshot){
+                                        if(snapshot.connectionState == ConnectionState.done){
+                                          if(snapshot.hasData){
+                                            return Card(child: ListTile(
+                                              onTap: (){
+                                                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => ClassConversation(schoolCode: snapshot.data['schoolCode'], userClass: snapshot.data['class'])) );
+                                              },
+                                              title: Text(snapshot.data['class']),
+                                              trailing: CircleButton(
+                                                      onTap: (){
+                                                        Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => ClassConversation(schoolCode: snapshot.data['schoolCode'], userClass: snapshot.data['class'])) );
+                                                      },
+                                                      iconData: Icons.arrow_forward_ios
+                                                    ),
+                                            ),);
+                                          }
+                                        }
+                                        return Container();
+                                    },
+                                    future: getUserProfile(),
+                                    )
+                                    ,)
+                            ],);
+                      }
+                      return Center(
+                              child: Container(
+                                child: RaisedButton(onPressed: (){
+                                    StoreProvider.of<AppState>(context).dispatch(TabIndex(1));
+                                    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
+                                },
+                                color: Colors.deepOrangeAccent,
+                                textColor: Colors.white,
+                                  child: Text('No Classroom found, Join Classroom'),
+                                )
+                                ,)
+                            );
+                    }
+                    return Center(
+                        child: Container(
+                          child: Text('Loading Chatrooms')
+                          ,)
+                      );
+                  })
+      );
+  }
+  /*
+
+ListView(
                                     physics: ScrollPhysics(), // to disable GridView's scrolling
                                     shrinkWrap: true,
                                     children: snapshot.data.map<Widget>((var document){
@@ -178,37 +244,15 @@ class ClassRoom extends StatelessWidget{
                                         );
                                     }).toList()
                                     ,)
-                                    ,)
-                            ],);
-                      }
-                      return Center(
-                              child: Container(
-                                child: RaisedButton(onPressed: (){
-                                    StoreProvider.of<AppState>(context).dispatch(TabIndex(1));
-                                    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Home()) );
-                                },
-                                color: Colors.deepOrangeAccent,
-                                textColor: Colors.white,
-                                  child: Text('No Classroom found, Join Classroom'),
-                                )
-                                ,)
-                            );
-                    }
-                    return Center(
-                        child: Container(
-                          child: Text('Loading Chatrooms')
-                          ,)
-                      );
-                  })
-      );
-  }
+
+  */
   Widget renderChatRooms(var user, BuildContext context){
       if(user['type'] == 'teacher'){
         print('ren render');
         return renderTeacherChatrooms(user['email'], user['schoolCode'], context);
       }
       print('in dtudents');
-      return renderStudentChatRooms();
+      return renderStudentChatRooms(context);
   }
   getUserDetails() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

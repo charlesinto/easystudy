@@ -92,9 +92,9 @@ class _UserLoginState extends State<UserLogin>{
       errorMessage = "";
     });
     _formKey.currentState.save();
-    if(_emailAddress.isEmpty || _pin.isEmpty || _phoneNumber.isEmpty){
+    if(_emailAddress.isEmpty || _phoneNumber.isEmpty){
       return setState((){
-          errorMessage = "Email, School Activation,Admission Number, Phone Number are required";
+          errorMessage = "Email, Phone Number are required";
       });
     }
     showDialog(
@@ -115,23 +115,7 @@ class _UserLoginState extends State<UserLogin>{
         ),),
       );
       });
-    // _fetchPrimarySchoolSubject(context);
-    // print('_pin:  '+ _pin);
-    // Navigator.of(context).pushReplacementNamed('/app');
-    // print(_emailAddress);
-    // var docs = await Firestore.instance.collection('users').where('email', isEqualTo: _emailAddress).getDocuments();
-    // print(docs.documents);
-    // if(docs.documents.isEmpty){
-    //   Navigator.pop(context);
-    //   return setState((){
-    //     errorMessage = "No Account found";
-    //   });
-    // }else{
-    //   var schoolCode = docs.documents[0].data['schoolCode'];
-    //   print(schoolCode);
-      
-    // }
-    await getSchoolDomain(_pin.trim(), context);
+      signupUser(context);
     
   }
 
@@ -172,7 +156,8 @@ class _UserLoginState extends State<UserLogin>{
               
               
                 // checkIfEmailNotExistThenSignUpUser(context, schoolCode);
-                return signupUser(context);
+               Navigator.of(context).pop();
+              return Navigator.of(context).pushReplacementNamed('/app');
               
            }
            setState((){
@@ -196,7 +181,13 @@ class _UserLoginState extends State<UserLogin>{
       var pin = _pin.trim();
       var authUser = await _firebaseAuth.signInWithEmailAndPassword(email: email, password: passworsd);
       
-      var userData = await _firestore.collection('/users/$pin/activated users').where('uid', isEqualTo: authUser.user.uid).getDocuments();
+      var userData = await _firestore.collection('users').where('uid', isEqualTo: authUser.user.uid).getDocuments();
+      if(userData.documents.isEmpty){
+         Navigator.of(context).pop();
+         return setState(() {
+            errorMessage = "No such account found";
+          }); 
+      }
       var user = userData.documents[0].data['firstName'] +" "+ userData.documents[0].data['lastName'];
       List<User> student = await App.getUserClass( pin, userData.documents[0].data['admissionNumber']);
           
@@ -207,8 +198,8 @@ class _UserLoginState extends State<UserLogin>{
       print(user);
       prefs.setString('user', json.encode(userData.documents[0].data));
       StoreProvider.of<AppState>(context).dispatch(LoggedInUser(user));
-          Navigator.of(context).pop();
-          Navigator.of(context).pushReplacementNamed('/app');
+      getSchoolDomain(userData.documents[0].data['schoolCode'], context);
+          
     }catch(error){
        Navigator.of(context).pop();
       setState(() {
@@ -316,18 +307,18 @@ class _UserLoginState extends State<UserLogin>{
                 key: _formKey,
                 child: Column(
                 children: <Widget>[
-                    Card(
-                          child: TextFormField(
-                            initialValue: _pin,
-                            decoration: InputDecoration(labelText: 'School Activation Pin',
-                              prefixIcon: Icon(LineIcons.key),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)),
-                            onSaved: (value){
-                              print('values 000'+  value);
-                              _pin = value;
-                            },
-                          ) ,
-                        ),
+                    // Card(
+                    //       child: TextFormField(
+                    //         initialValue: _pin,
+                    //         decoration: InputDecoration(labelText: 'School Activation Pin',
+                    //           prefixIcon: Icon(LineIcons.key),
+                    //           contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)),
+                    //         onSaved: (value){
+                    //           print('values 000'+  value);
+                    //           _pin = value;
+                    //         },
+                    //       ) ,
+                    //     ),
                         Card(
                           child: TextFormField(
                             keyboardType: TextInputType.emailAddress,

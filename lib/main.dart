@@ -100,6 +100,7 @@ class _MyAppState extends State<MyApp>{
 
   Future<String> getLocalUser() async{
     // print('here in');
+    
     await Permission.storage.request(); 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     // prefs.remove('user');

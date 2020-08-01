@@ -56,8 +56,8 @@ class _ProfileState extends State<Profile> {
       };
       var user = _firstName + " " + _lastName;
       var uid = (await FirebaseAuth.instance.currentUser()).uid;
-      var documents = await Firestore.instance.collection('/users/$_pin/activated users').where('uid', isEqualTo: uid).getDocuments();
-      await Firestore.instance.document('/users/$_pin/activated users/${documents.documents[0].documentID}').updateData(data);
+      var documents = await Firestore.instance.collection('users').where('uid', isEqualTo: uid).getDocuments();
+      await Firestore.instance.document('/users/${documents.documents[0].documentID}').updateData(data);
       _prefs.setString('user', json.encode('userData'));
       var studentData = json.decode(_prefs.getString('student'));
       studentData['class'] = student[0].userClass;
@@ -73,8 +73,8 @@ class _ProfileState extends State<Profile> {
       };
       var user = _firstName + " " + _lastName;
         var uid = (await FirebaseAuth.instance.currentUser()).uid;
-        var documents = await Firestore.instance.collection('/users/$_pin/activated users').where('uid', isEqualTo: uid).getDocuments();
-        await Firestore.instance.document('/users/$_pin/activated users/${documents.documents[0].documentID}').updateData(data);
+        var documents = await Firestore.instance.collection('users').where('uid', isEqualTo: uid).getDocuments();
+        await Firestore.instance.document('/users/${documents.documents[0].documentID}').updateData(data);
         
         StoreProvider.of<AppState>(context).dispatch(LoggedInUser(user));
         _prefs.setString('user', json.encode('userData'));
@@ -86,25 +86,32 @@ class _ProfileState extends State<Profile> {
     }
   
   Future<Map<String, dynamic>> getUserProfile() async{
-      SharedPreferences _prefs = await SharedPreferences.getInstance();
-      final Map<String, dynamic> userInfo = json.decode(_prefs.getString('user'));
-      String _firstName = userInfo['firstName'];
-      String _lastName = userInfo['lastName'];
-      
-      userInfo['class'] = json.decode(_prefs.getString('student'))['class'].toUpperCase();
-      _initals = _firstName.substring(0,1).toUpperCase() +" "+ _lastName.substring(0,1).toUpperCase();
-      _firstName = userInfo['firstName'];
-      _lastName = userInfo['lastName'];
-      _emailAddress = userInfo['email'];
-      _admissionNumber = userInfo['admissionNumber'];
-      _phoneNumber = userInfo['phoneNumber'];
-      return userInfo;
+      try{
+        SharedPreferences _prefs = await SharedPreferences.getInstance();
+        final Map<String, dynamic> userInfo = json.decode(_prefs.getString('user'));
+        String _firstName = userInfo['firstName'];
+        String _lastName = userInfo['lastName'];
+        print('caalled in her');
+        _initals = _firstName.substring(0,1).toUpperCase() +" "+ _lastName.substring(0,1).toUpperCase();
+        _firstName = userInfo['firstName'];
+        _lastName = userInfo['lastName'];
+        _emailAddress = userInfo['email'];
+        _class = userInfo['class'];
+        _admissionNumber = userInfo['admissionNumber'];
+        _phoneNumber = userInfo['phoneNumber'];
+        print(userInfo);
+        return userInfo;
+      }catch(error){
+        print(error);
+        return null;
+      }
   }
   Future<String> getInitials() async{
       SharedPreferences _prefs = await SharedPreferences.getInstance();
       final Map<String, dynamic> userInfo = json.decode(_prefs.getString('user'));
       String _firstName = userInfo['firstName'];
       String _lastName = userInfo['lastName'];
+    
       String _initials = _firstName.substring(0,1).toUpperCase() +" "+ _lastName.substring(0,1).toUpperCase();
       _type = json.decode(_prefs.getString('user'))['type'];
       return _initials;
